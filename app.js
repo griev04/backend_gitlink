@@ -1,5 +1,6 @@
 require('dotenv').config();
 const createError  = require('http-errors');
+const cors         = require('cors');
 const express      = require('express');
 const path         = require('path');
 const cookieParser = require('cookie-parser');
@@ -10,10 +11,12 @@ const passport     = require('passport');
 const mongoose     = require('mongoose');
 const MongoStore   = require('connect-mongo')(session);
 
+require('./config/passport');
 
+// initiate the app
 const app = express();
 
-// 1. check database connection
+// check database connection
 mongoose
   .connect(process.env.MONGO_URI, {useNewUrlParser: true})
   .then(x => {
@@ -23,6 +26,8 @@ mongoose
     console.error('Error connecting to mongo', err)
   });
 
+// configure the app
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -33,13 +38,14 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: true,
   saveUninitialized: true,
+  cookie: { maxAge: 60000 },
   store: new MongoStore({ mongooseConnection: mongoose.connection })
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-const authRoutes  = require('./routes/authRoutes');
-app.use('/api', authRoutes);
+const authRoutes  = require('./routes/authRoutes')(passport);
+app.use('/api/auth', authRoutes);
 
 module.exports = app;
