@@ -5,21 +5,26 @@ module.exports = function(passport){
 
   const router = express.Router();
 
-  router.post('/github', passport.authenticate('github'));
+  router.get('/github', passport.authenticate('github', (err, user, info) => {
+    if(!user){ res.send(info.message); return;}
+    req.login(user, error => {
+      if (error) return next(error);
+      console.log("Request Login supossedly successful.");
+      return res.send('Login successful');
+    })
+  }));
 
   router.get('/github/callback',
-    passport.authenticate('github',
-    (req, res) => {
-      console.log("Successfull authentification 🐳🐳🐳");
-      // res.redirect(`/api/users/me`);
-      res.json({user: req.user});
-    }
-  ));
+    passport.authenticate('github', {successRedirect: '/api/auth/'})
+    );
 
+  router.get('/', (req, res, next) =>{
+    res.send({user: req.user});
+  });
 
   router.get('/logout', (req, res, next) => {
     req.logout();
-    res.json({loggedOut: true})
+    res.send({loggedOut: true})
   });
 
   return router

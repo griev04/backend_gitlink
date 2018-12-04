@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
 
   id: {
-    type: Schema.Types.ObjectId,
+    type: String,
     required: true,
     index: true,
     unique: true,
@@ -29,7 +29,7 @@ const UserSchema = new Schema({
 },{
   timestamps: { createdAt: "gitlink_created_at", updatedAt: "gitlink_updated_at" }
 });
-userSchema.plugin(findOrCreate);
+UserSchema.plugin(findOrCreate);
 
 
 class UserClass {
