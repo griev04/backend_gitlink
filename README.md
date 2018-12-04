@@ -9,3 +9,5 @@ SESSION_SECRET: random string to protect the session
 CLIENT_ID: Github Oauth Client Id
 
 CLIENT_SECRET: Github Oauth Client Secret
+
+MONGO_URI: Uri to connect to mongodb

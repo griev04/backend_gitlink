@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const findOrCreate = require('mongoose-findorcreate');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
@@ -26,8 +27,9 @@ const UserSchema = new Schema({
   site_admin: String,
   name: String,
 },{
-  timestamps: true
+  timestamps: { createdAt: "gitlink_created_at", updatedAt: "gitlink_updated_at" }
 });
+userSchema.plugin(findOrCreate);
 
 
 class UserClass {

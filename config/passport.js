@@ -2,6 +2,8 @@ require('dotenv').config();
 const passport = require('passport');
 const GitHubStrategy = require('passport-github').Strategy;
 
+const User = require('../models/userModel');
+
 passport.serializeUser(function (user, done) {
   done(null, user.id);
 });
@@ -18,7 +20,7 @@ passport.use(new GitHubStrategy({
     // callbackURL: 'http://localhost:3000/login/github/callback'
   },
   function(accessToken, refreshToken, profile, cb){
-    User.findOrCreate({ githubId: profile.id }, function (err, user) {
+    User.findOrCreate(profile, function (err, user) {
       return cb(null, user);
     });
   }
