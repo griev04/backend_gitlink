@@ -47,11 +47,9 @@ const User = require('../models/userModel');
  */
 router.get('/current', (req, res, next) => {
   const user = req.user;
-  if (!user){res.json({user: null});}
+  if (!user){res.json({user: null}); return;}
   res.json({user});
 });
-
-
 
 /**
  * @api {get} /user/:id Get User information
