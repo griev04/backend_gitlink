@@ -44,6 +44,14 @@ class UserClass {
   static findOneByLogin(login){
     return this.findOne({login});
   }
+
+  /**
+   * Retrieves a record usind the github id
+   * @param id github id
+   */
+  static findByGitId(id){
+    return this.findOne({id})
+  }
 }
 
 

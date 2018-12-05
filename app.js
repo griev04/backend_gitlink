@@ -45,7 +45,13 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+
+/****** ROUTES *******/
+
 const authRoutes  = require('./routes/authRoutes')(passport);
 app.use('/api/auth', authRoutes);
+
+const userRoutes = require('./routes/userRoutes');
+app.use('/api/users');
 
 module.exports = app;
