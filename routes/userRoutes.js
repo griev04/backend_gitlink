@@ -11,6 +11,7 @@ const gh = require('../config/githubApi');
  *
  * @apiSuccess {String} _id  internal database id
  * @apiSuccess {String} id  github id
+ * @apiSuccess {String} access_token  github Oauth access token
  * @apiSuccess {String} login  username
  * @apiSuccess {String} avatar_url
  * @apiSuccess {String} url
@@ -67,6 +68,7 @@ router.get('/current', async (req, res, next) => {
  *
  * @apiSuccess {String} _id  internal database id
  * @apiSuccess {String} id  github id
+ * @apiSuccess {String} access_token  github Oauth access token
  * @apiSuccess {String} login  username
  * @apiSuccess {String} avatar_url
  * @apiSuccess {String} url
@@ -83,30 +85,15 @@ router.get('/current', async (req, res, next) => {
  * @apiSuccess {String} type
  * @apiSuccess {String} site_admin
  * @apiSuccess {String} name
- *
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *      'user': {
- *                "firstname": "John", // TODO : replace this with a postman answer
- *                "lastname": "Doe"
- *              }
- *     }
- *
- *
- * @apiError UserNotFound The <code>id</code> of the User was not found.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "error": "UserNotFound"
- *     }
  */
 router.get('/:id', async (req, res, next) => {
   try{
     const {id} = req.params;
     const user = await User.findByGitId(id);
-    if(!user){ throw Error(`user with id ${id} not found in the database`)};
+    if(!user){
+      console.log(`user with id ${id} not found in the database`);
+      res.json({user: null});
+    }
     res.json({user});
   } catch(err){
     console.log(err);

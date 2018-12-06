@@ -40,6 +40,25 @@ module.exports = function(passport){
     return User.create(userData)
   }
 
+  /**
+  * @api {post} /api/auth/login Logs in a user - create new profile if does not exist
+  * @apiName Login
+  * @apiGroup Authentification
+  *
+  * @apiParam {String} access_token github Oauth access token of the user
+  *
+  * @apiSuccess {String} jwt_token new generated jwt token for the user
+  * @apiSuccess {String} id Github id of the user
+  *
+  * @apiSuccessExample Success-Response:
+  *     HTTP/1.1 200 OK
+  *     {
+  *       "jwt_token": "jhbzqlfjbqsljnizqjnfklqjsnvlkzjenfkJNKJB",
+  *       "id": "989864"
+  *     }
+  *
+  * @apiError FailedLogin Could not login the user
+  */
   router.post('/login', async (req, res, next) => {
     try{
       let access_token = req.body.token;
@@ -73,49 +92,14 @@ module.exports = function(passport){
     }
   });
 
+
   router.post('/logout', (req, res, next) => {
     res.json({logout: true});
   });
 
   router.get('/failedAuth', (req, res, next) => {
-    res.json({failedAuth: true});
+    res.status(401).json({failedAuth: true});
   });
-
 
   return router
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  //
-  //
-  // /**
-  //  * @api {get} /api/auth/github Logs in with a github account. In case of success, it is redirected to /api/users/current
-  //  * @apiName Login
-  //  * @apiGroup Authentification
-  //  */
-  // router.get('/github', passport.authenticate('github', (err, user, info) => {
-  //   if(!user){ res.json({error: info.message}); return;}
-  //   req.login(user, error => {
-  //     if (error) return next(error);
-  //     return res.send('logged in successfully');
-  //   })
-  // }));
-  // router.get('/github/callback',
-  //   passport.authenticate('github', {successRedirect: '/api/users/current'})
-  // );
