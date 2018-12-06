@@ -1,34 +1,20 @@
 require('dotenv').config();
 const passport = require('passport');
-const GitHubStrategy = require('passport-github').Strategy;
 
 const User = require('../models/userModel');
 
-passport.serializeUser(function (user, done) {
-  done(null, user.id);
-});
+const JWTstrategy = require('passport-jwt').Strategy;
+const ExtractJWT = require('passport-jwt').ExtractJwt;
 
-passport.deserializeUser(function (id, done) {
-  User.findOne({id}, function (err, user) {
-    done(err, user);
-  });
-});
-
-passport.use(new GitHubStrategy({
-    clientID: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: 'http://10.244.5.20:8700/api/auth/github/callback'
-  },
-  async function(accessToken, refreshToken, profile, cb){
-    try{
-      let user = await User.findOne({id: profile._json.id});
-      if(!user){
-        user = await User.create(profile._json);
-      }
-      cb(null, user);
-    } catch (err){
-      console.log(err.message);
-      throw err;
-    }
+//This verifies that the token sent by the user is valid
+passport.use(new JWTstrategy({
+  secretOrKey : process.env.SESSION_SECRET,
+  jwtFromRequest : ExtractJWT.fromAuthHeaderAsBearerToken()
+}, async (decoded_jwt, done) => {
+  try {
+    let user = await User.findByGitId(decoded_jwt.id);
+    return done(null, user);
+  } catch (error) {
+    done(error);
   }
-));
+}));

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const findOrCreate = require('mongoose-findorcreate');
+mongoose.Promise = require('bluebird');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
@@ -10,6 +10,7 @@ const UserSchema = new Schema({
     index: true,
     unique: true,
   },
+  access_token: String,
   login: String,
   avatar_url: String,
   url: String,
@@ -29,7 +30,6 @@ const UserSchema = new Schema({
 },{
   timestamps: { createdAt: "gitlink_created_at", updatedAt: "gitlink_updated_at" }
 });
-UserSchema.plugin(findOrCreate);
 
 
 class UserClass {
@@ -52,6 +52,7 @@ class UserClass {
   static findByGitId(id){
     return this.findOne({id})
   }
+
 }
 
 

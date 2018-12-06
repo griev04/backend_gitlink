@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const User = require('../models/userModel');
-
+const gh = require('../config/githubApi');
 
 /**
  * @api {get} /user/current Get the current User information
@@ -45,8 +45,15 @@ const User = require('../models/userModel');
  *       "user": "null"
  *     }
  */
-router.get('/current', (req, res, next) => {
-  const user = req.user;
+router.get('/current', async (req, res, next) => {
+
+  // 1. get user data
+  let userRequest = await gh.get('/user', {
+    params: {access_token : req.user.access_token}
+  });
+
+  let user = userRequest.data;
+
   if (!user){res.json({user: null}); return;}
   res.json({user});
 });
