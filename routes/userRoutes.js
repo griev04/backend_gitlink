@@ -48,6 +48,7 @@ const gh = require('../config/githubApi');
  */
 router.get('/current', async (req, res, next) => {
 
+  // TODO: this is just a demo and will certainly by changed
   // 1. get user data
   let userRequest = await gh.get('/user', {
     params: {access_token : req.user.access_token}
@@ -88,6 +89,7 @@ router.get('/current', async (req, res, next) => {
  */
 router.get('/:id', async (req, res, next) => {
   try{
+    // TODO: this is just a demo and will certainly by changed
     const {id} = req.params;
     const user = await User.findByGitId(id);
     if(!user){
