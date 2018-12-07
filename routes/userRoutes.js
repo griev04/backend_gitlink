@@ -46,7 +46,7 @@ const gh = require('../config/githubApi');
  *       "user": "null"
  *     }
  */
-router.get('/current', async (req, res, next) => {
+router.get('/users/current', async (req, res, next) => {
 
   // TODO: this is just a demo and will certainly by changed
   // 1. get user data
@@ -87,7 +87,7 @@ router.get('/current', async (req, res, next) => {
  * @apiSuccess {String} site_admin
  * @apiSuccess {String} name
  */
-router.get('/:id', async (req, res, next) => {
+router.get('/users/:id', async (req, res, next) => {
   try{
     // TODO: this is just a demo and will certainly by changed
     const {id} = req.params;
