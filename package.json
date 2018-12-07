@@ -6,9 +6,23 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "apidoc": "^0.17.7",
+    "axios": "^0.18.0",
+    "bluebird": "^3.5.3",
+    "body-parser": "^1.18.3",
+    "connect-mongo": "^2.0.3",
     "cookie-parser": "~1.4.3",
+    "cors": "^2.8.5",
     "debug": "~2.6.9",
+    "dotenv": "^6.1.0",
     "express": "~4.16.0",
-    "morgan": "~1.9.0"
+    "express-session": "^1.15.6",
+    "http-errors": "^1.7.1",
+    "jsonwebtoken": "^8.4.0",
+    "mongoose": "^5.3.14",
+    "mongoose-findorcreate": "^3.0.0",
+    "morgan": "~1.9.0",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0"
   }
 }
