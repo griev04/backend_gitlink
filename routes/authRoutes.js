@@ -61,7 +61,7 @@ module.exports = function(passport){
   */
   router.post('/login', async (req, res, next) => {
     try{
-      let access_token = req.body.token;
+      let {access_token} = req.body;
 
       // 1. get user data
       let userRequest = await gh.get('/user', {
