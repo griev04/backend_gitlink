@@ -12,3 +12,6 @@ CLIENT_SECRET: Github Oauth Client Secret
 
 MONGO_URI: Uri to connect to mongodb
 example: mongodb://localhost/gitlink
+
+### Generate documentation:
+apidoc -i routes/ -o apidoc/
