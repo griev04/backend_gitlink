@@ -50,9 +50,7 @@ router.get('/users/current', async (req, res, next) => {
 
   // TODO: this is just a demo and will certainly by changed
   // 1. get user data
-  let userRequest = await gh.get('/user', {
-    params: {access_token : req.user.access_token}
-  });
+  let userRequest = await gh(req.user.access_token).get('/user');
 
   let user = userRequest.data;
 

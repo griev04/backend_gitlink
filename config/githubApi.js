@@ -1,7 +1,17 @@
 const axios = require('axios');
 
-const gh = axios.create({
-  baseURL: 'https://api.github.com'
-});
+
+function gh(oauth_token=null) {
+
+  if(!oauth_token){
+    return axios.create({
+      baseURL: 'https://api.github.com'
+    });
+  }
+  return axios.create({
+    baseURL:'https://api.github.com',
+    headers: {'Authorization': `token ${oauth_token}`}
+  })
+}
 
 module.exports = gh;

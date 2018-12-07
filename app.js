@@ -43,4 +43,7 @@ app.use('/api/auth', authRoutes);
 const userRoutes = require('./routes/userRoutes');
 app.use('/api/users', passport.authenticate('jwt', { session : false , failureRedirect:'/api/auth/failedAuth'}), userRoutes );
 
+const postRoutes = require('./routes/postRoutes');
+app.use('/api/posts', passport.authenticate('jwt', { session : false , failureRedirect:'/api/auth/failedAuth'}), postRoutes );
+
 module.exports = app;

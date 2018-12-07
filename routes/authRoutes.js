@@ -15,7 +15,7 @@ module.exports = function(passport){
    * @param access_token : github access token
    * @return {Promise<{user: *, jwt_token: *}>}
    */
-   async function login(userDb, access_token){
+   async function logIn(userDb, access_token){
 
      // 1. update access token
     console.log(`login user ${userDb.id}`);
@@ -64,9 +64,7 @@ module.exports = function(passport){
       let {access_token} = req.body;
 
       // 1. get user data
-      let userRequest = await gh.get('/user', {
-        params: {access_token}
-      });
+      let userRequest = await gh(access_token).get('/user');
       const userData = userRequest.data;
       console.log(`got user data for ${userData.id}`);
 
@@ -80,11 +78,12 @@ module.exports = function(passport){
         userDb = await signup(userData);
       }
 
-      // in all cases, logs him in
-      let {user, jwt_token} = await login(userDb, access_token);
+      // 4. in all cases, logs him in
+      let {user, jwt_token} = await logIn(userDb, access_token);
       console.log(`new token for user ${user.id} is ${userDb.access_token} - jwt_token : ${jwt_token}`);
 
-      res.json({jwt_token, id: user.id});
+      // 5. send reposne to client
+      res.json({jwt_token, id: user.id, login: user.login});
 
     } catch(err){
       console.log(err);
