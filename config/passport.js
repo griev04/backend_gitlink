@@ -12,6 +12,8 @@ passport.use(new JWTstrategy({
   jwtFromRequest : ExtractJWT.fromAuthHeaderAsBearerToken()
 }, async (decoded_jwt, done) => {
   try {
+    console.log("🐳🐳🐳🐳🐳🐳🐳🐳🐳");
+    console.log(decoded_jwt);
     let user = await User.findByGitId(decoded_jwt.id);
     return done(null, user);
   } catch (error) {

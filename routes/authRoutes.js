@@ -59,7 +59,7 @@ module.exports = function(passport){
   *
   * @apiError FailedLogin Could not login the user
   */
-  router.post('/auth/login', async (req, res, next) => {
+  router.post('/login', async (req, res, next) => {
     try{
       let {access_token} = req.body;
 
@@ -92,11 +92,11 @@ module.exports = function(passport){
   });
 
 
-  router.post('/auth/logout', (req, res, next) => {
+  router.post('/logout', (req, res, next) => {
     res.json({logout: true});
   });
 
-  router.get('/auth/failedAuth', (req, res, next) => {
+  router.get('/failedAuth', (req, res, next) => {
     res.status(401).json({failedAuth: true});
   });
 
