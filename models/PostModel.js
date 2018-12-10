@@ -7,24 +7,29 @@ const PostSchema = new Schema(
     id: {
       type: String,
       required: true,
-      // index: true,
+      index: true,
       unique: true
     },
     likes: {
-       type: [{ type: String, unique: true }], 
-       default: [] 
-      },
+      // type: [
+      //   {
+      //     userId: { type: String, required: true },
+      //     userName: { type: String},
+      //   }        
+      // ],
+      type: Array
+    },
     comments: {
-      type: [
-        {
-          user: { type: String, required: true },
-          userId: { type: String, required: true },
-          usera_avatar_url: { type: String, required: true },
-          comment: { type: String, required: true },
-          timestamps: { createdAt: 'created_at' },
-        }
-      ],
-      default: []
+      type: Array
+      // type: [
+      //   {
+      //     userId: { type: String, required: true },
+      //     userName: { type: String },
+      //     usera_avatar_url: { type: String },
+      //     comment: { type: String }
+      //   }
+      // ],
+      // default: []
     }
   },
   {
@@ -40,11 +45,11 @@ class PostClass {
    * This class wil host the getters/setters and the static methods for querying
    */
   static checkPostExistence(eventId) {
-    return Post.this.findByGitId(eventId);
+    return this.find({ id: eventId });
   }
 
-  async addComment(eventId, oneComment) {
-    let post = await checkPostExistence(eventId);
+  static async addComment(eventId, oneComment) {
+    let post = await this.checkPostExistence(eventId);
     if (post === null) {
       await Post.create({ id: eventId, comments: [oneComment] });
     } else {
@@ -55,17 +60,25 @@ class PostClass {
     }
   }
 
-  async addLike(eventId, userLike) {
-    let post = await checkPostExistence(eventId);
-    if (post === null) {
-      await Post.create({ id: eventId, likes: [userLike] });
-    } else {
-      await Post.findOneAndUpdate({ eventId }, { $push: { likes: userLike } });
+  static async appendLike(eventId, user) {
+    try {
+      const { userName, userId } = user;
+      let post = await this.checkPostExistence(eventId);
+      if (post === null) {
+        await Post.create({ id: eventId, likes: [userId] });
+      } else {
+        await Post.findOneAndUpdate(
+          { eventId },
+          { $push: { likes: { userName, userId } } }
+        );
+      }
+    } catch (err) {
+      console.log(err);
     }
   }
 
   static findByGitIds(feedIds) {
-    return this.find({ id: {$in: feedIds} });
+    return this.find({ id: { $in: feedIds } });
   }
 
   static buildLike(actor_id, actor_login, timestamp) {
