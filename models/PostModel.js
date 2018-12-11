@@ -11,12 +11,12 @@ const PostSchema = new Schema(
       unique: true
     },
     likes: {
-      // type: [
-      //   {
-      //     userId: { type: String, required: true },
-      //     userName: { type: String},
-      //   }        
-      // ],
+      type: [
+        {
+          userId: { type: String },
+          userName: { type: String},
+        }        
+      ],
       type: Array
     },
     comments: {

@@ -4,12 +4,23 @@ const Post = require("../models/PostModel");
 
 const gh = require("../config/githubApi");
 
-async function getFeedInteractions(feedArray) {
+async function getFeedInteractions(feedArray, userId) {
+  // Get array of ids of the posts
   let searchArray = feedArray.map(post => post.id);
+
+  // Get the social interactions from gitLink db using post id
   let socialFeed = await Post.findByGitIds(searchArray);
+
+  // Find if user liked post
+  let socialUserFeed = socialFeed.map(item => ({
+    ...item._doc,
+    userLiked: (item.likes.filter(like => like.userId === userId ).length > 0) ? true : false,
+  }))
+
+  // Add social interactions to the feed event
   let completeFeed = feedArray.map(feedItem => ({
     ...feedItem,
-    ...socialFeed.find(
+    ...socialUserFeed.find(
       socialItem => socialItem.id === feedItem.id && socialItem
     )
   }));
@@ -24,7 +35,7 @@ router.get("/currentUser", async (req, res, next) => {
       `/users/${user.login}/received_events`
     );
 
-    let completeResponse = await getFeedInteractions(response.data);
+    let completeResponse = await getFeedInteractions(response.data, user.id);
 
     res.json({ posts: completeResponse });
   } catch (err) {
