@@ -46,4 +46,7 @@ app.use('/api/users', passport.authenticate('jwt', { session : false , failureRe
 const postRoutes = require('./routes/postRoutes');
 app.use('/api/posts', passport.authenticate('jwt', { session : false , failureRedirect:'/api/auth/failedAuth'}), postRoutes );
 
+const repoRoutes = require('./routes/repoRoutes');
+app.use('/api/repos', passport.authenticate('jwt', { session : false , failureRedirect:'/api/auth/failedAuth'}), repoRoutes );
+
 module.exports = app;
