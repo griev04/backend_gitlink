@@ -68,8 +68,6 @@ class PostClass {
 
       let result;
       if (postDocs.length === 0) {
-        console.log("CREATING COMMENT...");
-
         // Create new document
         result = await this.create({
           id: feedId,
@@ -84,7 +82,6 @@ class PostClass {
           ]
         });
       } else {
-        console.log("UPDATING ARRAY OF COMMENTS...");
         let newComment = {
           userId: id,
           login,
