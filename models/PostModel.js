@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
 const Schema = mongoose.Schema;
+const User = require("../models/userModel");
 
 const PostSchema = new Schema(
   {
@@ -11,25 +12,23 @@ const PostSchema = new Schema(
       unique: true
     },
     likes: {
-      type: [
-        {
-          userId: { type: String },
-          userName: { type: String},
-        }        
-      ],
       type: Array
+      // [
+      //   {
+      //     userId: { type: String },
+      //     userName: { type: String }
+      //   }
+      // ]
     },
     comments: {
       type: Array
-      // type: [
+      // [
       //   {
-      //     userId: { type: String, required: true },
-      //     userName: { type: String },
-      //     usera_avatar_url: { type: String },
-      //     comment: { type: String }
+      //     userId: { type: String },
+      //     comment: { type: String },
+      //     timestamp: { type: String }
       //   }
-      // ],
-      // default: []
+      // ]
     }
   },
   {
@@ -44,32 +43,60 @@ class PostClass {
   /**
    * This class wil host the getters/setters and the static methods for querying
    */
+
+  /** Checks if a github event is already saed in the gitLink db
+   *
+   * @param eventId id of the github event
+   */
   static checkPostExistence(eventId) {
     return this.find({ id: eventId });
   }
 
-  static async addComment(eventId, oneComment) {
-    let post = await this.checkPostExistence(eventId);
-    if (post === null) {
-      await Post.create({ id: eventId, comments: [oneComment] });
-    } else {
-      await Post.findOneAndUpdate(
-        { eventId },
-        { $push: { comments: oneComment } }
-      );
-    }
-  }
-
-  static async appendLike(eventId, user) {
+  /** Creates a new comment on a feed post
+   *
+   * @param feedId id of the github event
+   * @param user user posting the comment
+   * @param commentContent text of the comment
+   */
+  static async createComment(feedId, user, commentContent) {
     try {
-      const { userName, userId } = user;
-      let post = await this.checkPostExistence(eventId);
-      if (post === null) {
-        await Post.create({ id: eventId, likes: [userId] });
+      const { login, id, avatar_url } = user;
+
+      console.log(`${login} with id ${id} commented on post ${feedId}`);
+
+      let postDocs = await this.checkPostExistence(feedId);
+
+      let result;
+      if (postDocs.length === 0) {
+        console.log("CREATING COMMENT...");
+
+        // Create new document
+        result = await this.create({
+          id: feedId,
+          comments: [
+            {
+              userId: id,
+              login,
+              avatar_url,
+              comment: commentContent,
+              timestamp: new Date()
+            }
+          ]
+        });
       } else {
-        await Post.findOneAndUpdate(
-          { eventId },
-          { $push: { likes: { userName, userId } } }
+        console.log("UPDATING ARRAY OF COMMENTS...");
+        let newComment = {
+          userId: id,
+          login,
+          avatar_url,
+          comment: commentContent,
+          timestamp: new Date()
+        };
+
+        // Update existing document
+        result = await this.findOneAndUpdate(
+          { id: feedId },
+          { $addToSet: { comments: newComment } }
         );
       }
     } catch (err) {
@@ -77,16 +104,74 @@ class PostClass {
     }
   }
 
+  /** Adds a like to a feed post
+   *
+   * @param feedId id of the github event
+   * @param user user posting the comment
+   */
+  static async createLike(feedId, user) {
+    try {
+      const { login, id } = user;
+
+      console.log(`${login} with id ${id} liked post ${feedId}`);
+
+      let postDocs = await this.checkPostExistence(feedId);
+
+      let result;
+      if (postDocs.length === 0) {
+
+        // Create new document
+        result = await this.create({
+          id: feedId,
+          likes: [{ userName: login, userId: id }]
+        });
+      } else {
+        let newLike = { userName: login, userId: id };
+
+        // Update existing document
+        result = await this.findOneAndUpdate(
+          { id: feedId },
+          { $addToSet: { likes: newLike } }
+        );
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  /**
+   * Retrieves records usind the github id
+   * @param id github id
+   */
   static findByGitIds(feedIds) {
     return this.find({ id: { $in: feedIds } });
   }
 
-  static buildLike(actor_id, actor_login, timestamp) {
-    return {
-      actor_id,
-      actor_login,
-      timestamp
-    };
+  static async getFeedInteractions(posts, userId) {
+    // Get array of ids of the posts
+    let searchArray = posts.map(post => post.id);
+
+    // Get the social interactions from gitLink db using post id
+    let socialFeed = await this.findByGitIds(searchArray);
+
+    // Find if user liked post
+    let socialUserFeed = socialFeed.map(item => ({
+      ...item._doc,
+      userLiked:
+        item.likes.filter(like => like.userId === userId).length > 0
+          ? true
+          : false
+    }));
+
+    // Add social interactions to the feed event
+    let completeFeed = posts.map(feedItem => ({
+      ...feedItem,
+      ...socialUserFeed.find(
+        socialItem => socialItem.id === feedItem.id && socialItem
+      )
+    }));
+
+    return completeFeed;
   }
 }
 
