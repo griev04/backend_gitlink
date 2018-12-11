@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const User = require('../models/userModel');
-const gh = require('../config/githubApi');
+const User = require("../models/userModel");
+const gh = require("../config/githubApi");
 
 /**
  * @api {get} /user/current Get the current User information
@@ -46,20 +46,21 @@ const gh = require('../config/githubApi');
  *       "user": "null"
  *     }
  */
-router.get('/current', async (req, res, next) => {
-
+router.get("/current", async (req, res, next) => {
   // TODO: this is just a demo and will certainly by changed
   // 1. get user data
-  let userRequest = await gh(req.user.access_token).get('/user');
-
+  let userRequest = await gh(req.user.access_token).get("/user");
   let user = userRequest.data;
 
-  if (!user){res.json({user: null}); return;}
-  res.json({user});
+  if (!user) {
+    res.json({ user: null });
+    return;
+  }
+  res.json({ user });
 });
 
 /**
- * @api {get} /user/:id Get User information
+ * @api {get} /user/:login Get User information
  * @apiName GetUser
  * @apiGroup User
  *
@@ -85,21 +86,18 @@ router.get('/current', async (req, res, next) => {
  * @apiSuccess {String} site_admin
  * @apiSuccess {String} name
  */
-router.get('/:id', async (req, res, next) => {
-  try{
-    // TODO: this is just a demo and will certainly by changed
-    const {id} = req.params;
-    const user = await User.findByGitId(id);
-    if(!user){
-      console.log(`user with id ${id} not found in the database`);
-      res.json({user: null});
-    }
-    res.json({user});
-  } catch(err){
-    console.log(err);
-    next(err);
-  }
-});
 
+router.get("/:login", async (req, res, next) => {
+  try {
+    // get otherprofile information
+    const { login } = req.params;
+    const response = await gh(req.user.access_token).get(`/users/${login}`);
+    res.json({otherUser: response.data});
+  }
+  catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message});
+    }
+});
 
 module.exports = router;
