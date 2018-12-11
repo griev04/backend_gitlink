@@ -58,6 +58,31 @@ router.get('/current', async (req, res, next) => {
   res.json({user});
 });
 
+
+/**
+ * @api {get} /users/search Searches a user in github
+ * @apiName SearchUser
+ * @apiGroup User
+ *
+ * @apiParam {String} query username of the user to look for
+ *
+ * @apiSuccess {[Object]} items array of user objects
+ *
+ */
+router.get('/search', async (req, res, next) => {
+  try{
+    const user = req.user;
+    const {query} = req.query;
+    let response = await gh(user.access_token).get(`/search/users?q=${query}`);
+    res.json({
+      items: response.data.items
+    })
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+});
+
 /**
  * @api {get} /user/:id Get User information
  * @apiName GetUser
