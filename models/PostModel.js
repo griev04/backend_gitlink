@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
 const Schema = mongoose.Schema;
-const User = require("../models/userModel");
 
 const PostSchema = new Schema(
   {
@@ -13,22 +12,9 @@ const PostSchema = new Schema(
     },
     likes: {
       type: Array
-      // [
-      //   {
-      //     userId: { type: String },
-      //     userName: { type: String }
-      //   }
-      // ]
     },
     comments: {
       type: Array
-      // [
-      //   {
-      //     userId: { type: String },
-      //     comment: { type: String },
-      //     timestamp: { type: String }
-      //   }
-      // ]
     }
   },
   {
