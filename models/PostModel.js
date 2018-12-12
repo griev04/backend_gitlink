@@ -147,12 +147,16 @@ class PostClass {
     }));
 
     // Add social interactions to the feed event
-    let completeFeed = posts.map(feedItem => ({
-      ...feedItem,
+    let completeFeed = posts.map(feedItem => {
+      let socialData = {...feedItem};
+      if (!socialData.comments) socialData.comments = [];
+      if (!socialData.likes) socialData.likes = [];
+      return{
+      ...socialData,
       ...socialUserFeed.find(
         socialItem => socialItem.id === feedItem.id && socialItem
       )
-    }));
+    }});
 
     return completeFeed;
   }
