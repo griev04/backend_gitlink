@@ -84,6 +84,30 @@ router.get('/search', async (req, res, next) => {
   }
 });
 
+
+/**
+ * @api {get} /users/{login}/repos Get all repos for a given user
+ * @apiName GetRepos
+ * @apiGroup User
+ *
+ * @apiSuccess {[Object]} items array of repo objects
+ *
+ */
+router.get('/:login/repos', async (req, res, next) => {
+  try{
+  const {access_token} = req.user;
+  const {login} = req.params;
+  let response =  await gh(access_token).get(`/users/${login}/repos`, {
+    params: {sort: 'updated'}
+  });
+  res.json(response.data);
+  } catch(err){
+    console.log(err);
+    res.status(500).json({err: err.message});
+  }
+});
+
+
 /**
  * @api {get} /user/:login Get User information
  * @apiName GetUser
