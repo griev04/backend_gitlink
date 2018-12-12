@@ -34,8 +34,8 @@ class PostClass {
    *
    * @param eventId id of the github event
    */
-  static checkPostExistence(eventId) {
-    return this.find({ id: eventId });
+  static getPost(eventId) {
+    return this.findOne({ id: eventId });
   }
 
   /** Creates a new comment on a feed post
@@ -50,12 +50,11 @@ class PostClass {
 
       console.log(`${login} with id ${id} commented on post ${feedId}`);
 
-      let postDocs = await this.checkPostExistence(feedId);
+      let postDoc = await this.getPost(feedId);
 
-      let result;
-      if (postDocs.length === 0) {
+      if (!postDoc) {
         // Create new document
-        result = await this.create({
+        await this.create({
           id: feedId,
           comments: [
             {
@@ -77,11 +76,12 @@ class PostClass {
         };
 
         // Update existing document
-        result = await this.findOneAndUpdate(
+        await this.findOneAndUpdate(
           { id: feedId },
           { $addToSet: { comments: newComment } }
         );
       }
+
     } catch (err) {
       console.log(err);
     }
@@ -98,13 +98,12 @@ class PostClass {
 
       console.log(`${login} with id ${id} liked post ${feedId}`);
 
-      let postDocs = await this.checkPostExistence(feedId);
+      let postDoc = await this.getPost(feedId);
 
-      let result;
-      if (postDocs.length === 0) {
+      if (!postDoc) {
 
         // Create new document
-        result = await this.create({
+        await this.create({
           id: feedId,
           likes: [{ userName: login, userId: id }]
         });
@@ -112,7 +111,7 @@ class PostClass {
         let newLike = { userName: login, userId: id };
 
         // Update existing document
-        result = await this.findOneAndUpdate(
+        await this.findOneAndUpdate(
           { id: feedId },
           { $addToSet: { likes: newLike } }
         );
@@ -130,31 +129,28 @@ class PostClass {
     return this.find({ id: { $in: feedIds } });
   }
 
-  static async getFeedInteractions(posts, userId) {
+  static async getFeedInteractions(ghPosts, userId) {
     // Get array of ids of the posts
-    let searchArray = posts.map(post => post.id);
+    let ghPostIds = ghPosts.map(post => post.id);
 
     // Get the social interactions from gitLink db using post id
-    let socialFeed = await this.findByGitIds(searchArray);
+    let dbPosts = await this.findByGitIds(ghPostIds);
 
     // Find if user liked post
-    let socialUserFeed = socialFeed.map(item => ({
-      ...item._doc,
+    dbPosts = dbPosts.map(post => ({
+      ...post._doc,
       userLiked:
-        item.likes.filter(like => like.userId === userId).length > 0
-          ? true
-          : false
+        post.likes.some(like => like.userId === userId)
     }));
 
     // Add social interactions to the feed event
-    let completeFeed = posts.map(feedItem => {
-      let socialData = {...feedItem};
-      if (!socialData.comments) socialData.comments = [];
-      if (!socialData.likes) socialData.likes = [];
+    let completeFeed = ghPosts.map(post => {
+      if (!post.comments) post.comments = [];
+      if (!post.likes) post.likes = [];
       return{
-      ...socialData,
-      ...socialUserFeed.find(
-        socialItem => socialItem.id === feedItem.id && socialItem
+        ...post,
+        ...dbPosts.find(
+        socialItem => (socialItem.id === post.id) //&& socialItem
       )
     }});
 
