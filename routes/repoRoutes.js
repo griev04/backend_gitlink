@@ -29,4 +29,43 @@ router.get('/search', async (req, res, next) => {
 });
 
 
+/**
+ * @api {get} /repos/:repoOwner/:repoName Get a given repo
+ * @apiName GetRepo
+ * @apiGroup Repo
+ *
+ * @apiSuccess {Object} repo repo object
+ */
+router.get('/:repoOwner/:repoName', async (req, res, next) => {
+  try{
+    const {access_token} = req.user;
+    const {repoOwner, repoName} = req.params;
+    let response = await gh(access_token).get(`/repos/${repoOwner}/${repoName}`);
+    res.json({repo: response.data});
+    } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+});
+
+/**
+ * @api {get} /repos/:repoOwner/:repoName Get a given repo
+ * @apiName GetRepo
+ * @apiGroup Repo
+ *
+ * @apiSuccess {Object} repo repo object
+ */
+router.get('/:repoOwner/:repoName/contributors', async (req, res, next) => {
+  try{
+    const {access_token} = req.user;
+    const {repoOwner, repoName} = req.params;
+    let response = await gh(access_token).get(`/repos/${repoOwner}/${repoName}/contributors`);
+    res.json({contributors: response.data});
+    } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+});
+
+
 module.exports = router;
