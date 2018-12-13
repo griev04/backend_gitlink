@@ -10,7 +10,7 @@ router.get("/currentUser", async (req, res, next) => {
   try {
     const user = req.user;
     let response = await gh(user.access_token).get(
-      `/users/${user.login}/received_events`
+      `/users/${user.login}/received_events?per_page=300`
     );
 
     let completeResponse = await Post.getFeedInteractions(response.data, user.id);
