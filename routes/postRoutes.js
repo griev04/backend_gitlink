@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Post = require("../models/PostModel");
+const User = require("../models/UserModel");
 
 const gh = require("../config/githubApi");
 
@@ -22,13 +23,16 @@ router.get("/currentUser", async (req, res, next) => {
   }
 });
 
-router.post("/comments", async (req, res, next) => {
+router.post("/comment", async (req, res, next) => {
   try {
     const user = req.user;
-    const { feedId, commentContent } = req.body;
-    
-    const result = Post.createComment(feedId, user, commentContent);
-    
+    const { feedId, feedEvent, commentContent } = req.body;
+   
+    // create and save comment and notification
+    let result;
+    if (User.findOneByLogin(feedEvent.repo.name.split("/").slice(0, 1))){
+      result = Post.createComment(feedId, feedEvent, user, commentContent);
+    }
     res.json({result});
     
   } catch (err) {
@@ -37,13 +41,16 @@ router.post("/comments", async (req, res, next) => {
   }
 });
 
-router.post("/handleLike", async (req, res, next) => {
+router.post("/like", async (req, res, next) => {
   try {
     const user = req.user;
-    const { feedId } = req.body;
+    const { feedId, feedEvent } = req.body;
 
-    // Save new like to DB
-    const result = Post.createLike(feedId, user);
+    // Create and save like and notification
+    let result;
+    if (User.findOneByLogin(feedEvent.repo.name.split("/").slice(0, 1))){
+      result = Post.createLike(feedId, feedEvent, user);
+    }
     
     res.json({ result });
   } catch (err) {

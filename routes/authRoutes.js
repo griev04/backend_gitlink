@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
-const User = require('../models/userModel');
+const User = require('../models/UserModel');
 const gh = require('../config/githubApi');
 
 module.exports = function(passport){
