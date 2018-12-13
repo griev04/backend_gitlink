@@ -24,6 +24,7 @@ router.get("/currentUser", async (req, res, next) => {
           id: event.githubPost.id,
           type: "GitLinkComment",
           comments,
+          githubPost: event.githubPost,
           created_at: new Date(
             Math.max(...comments.map(comm => comm.timestamp), 0)
           )
@@ -37,6 +38,7 @@ router.get("/currentUser", async (req, res, next) => {
           id: event.githubPost.id,
           type: "GitLinkLike",
           likes,
+          githubPost: event.githubPost,
           created_at: new Date(
             Math.max(...likes.map(comm => comm.timestamp), 0)
           )
@@ -95,7 +97,7 @@ router.get("/currentUser", async (req, res, next) => {
 
     const notifications = dbNotifications
       .concat(ghNotifications)
-      .sort((first, second) => (second.created_at < first.created_at ? 1 : -1));
+      .sort((first, second) => (second.created_at > first.created_at ? 1 : -1));
 
     // GET LIKES AND COMMENTS
     // let gitLinkNotifications = User.getUserNotification(user);
