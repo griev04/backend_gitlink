@@ -92,7 +92,7 @@ router.get('/followers/:login' , async (req, res, next) => {
     const currentUser = req.user;
     const {login} = req.params;
     let response = await  gh(currentUser.access_token).get(`/users/${login}/followers`);
-    res.json(response.data);
+    res.json({followers: response.data});
   } catch(err){
     console.log(err);
     res.status(500).json({error: err.message})
@@ -108,7 +108,7 @@ router.get('/following/list/:login', async (req, res, next) => {
     const currentUser = req.user;
     const {login} = req.params;
     let response = await  gh(currentUser.access_token).get(`/users/${login}/following`);
-    res.json(response.data);
+    res.json({following: response.data});
   } catch(err){
     console.log(err);
     res.status(500).json({error: err.message})
