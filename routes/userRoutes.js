@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-const User = require("../models/userModel");
 const gh = require("../config/githubApi");
 
 /**
@@ -159,7 +158,7 @@ router.delete('/following/:login', async(req, res, next) => {
   try{
     const currentUser = req.user;
     const {login} = req.params;
-    let response = await  gh(currentUser.access_token).put(`/user/following/${login}`);
+    let response = await  gh(currentUser.access_token).delete(`/user/following/${login}`);
     res.json({
       success: true
     })

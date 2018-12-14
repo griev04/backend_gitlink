@@ -10,6 +10,9 @@ const PostSchema = new Schema(
       index: true,
       unique: true
     },
+    githubPost: {
+      type: Object
+    },
     likes: {
       type: Array
     },
@@ -44,44 +47,37 @@ class PostClass {
    * @param user user posting the comment
    * @param commentContent text of the comment
    */
-  static async createComment(feedId, user, commentContent) {
+  static async createComment(feedId, feedEvent, user, commentContent) {
     try {
       const { login, id, avatar_url } = user;
 
       console.log(`${login} with id ${id} commented on post ${feedId}`);
 
-      let postDoc = await this.getPost(feedId);
+      const postDoc = await this.getPost(feedId);
+
+      const newComment = {
+        userName: login,
+        userId: id,
+        userAvatar: avatar_url,
+        comment: commentContent,
+        timestamp: new Date()
+      };
 
       if (!postDoc) {
         // Create new document
         await this.create({
           id: feedId,
-          comments: [
-            {
-              userId: id,
-              login,
-              avatar_url,
-              comment: commentContent,
-              timestamp: new Date()
-            }
-          ]
+          githubPost: feedEvent,
+          comments: [newComment]
         });
       } else {
-        let newComment = {
-          userId: id,
-          login,
-          avatar_url,
-          comment: commentContent,
-          timestamp: new Date()
-        };
-
         // Update existing document
         await this.findOneAndUpdate(
           { id: feedId },
           { $addToSet: { comments: newComment } }
         );
       }
-
+      return true;
     } catch (err) {
       console.log(err);
     }
@@ -92,30 +88,41 @@ class PostClass {
    * @param feedId id of the github event
    * @param user user posting the comment
    */
-  static async createLike(feedId, user) {
+  static async createLike(feedId, feedEvent, user) {
     try {
-      const { login, id } = user;
+      const { login, id, avatar_url } = user;
 
       console.log(`${login} with id ${id} liked post ${feedId}`);
 
-      let postDoc = await this.getPost(feedId);
+      const postDoc = await this.getPost(feedId);
+
+      const newLike = {
+        userName: login,
+        userId: id,
+        userAvatar: avatar_url,
+        timestamp: new Date()
+      };
 
       if (!postDoc) {
-
         // Create new document
         await this.create({
           id: feedId,
-          likes: [{ userName: login, userId: id }]
+          githubPost: feedEvent,
+          likes: [newLike]
         });
       } else {
-        let newLike = { userName: login, userId: id };
-
         // Update existing document
         await this.findOneAndUpdate(
           { id: feedId },
           { $addToSet: { likes: newLike } }
         );
       }
+
+      // Create notification for receiving user
+
+      // User.createAndSaveNotification(feedEvent, newLike, "like");
+
+      return true;
     } catch (err) {
       console.log(err);
     }
@@ -129,6 +136,11 @@ class PostClass {
     return this.find({ id: { $in: feedIds } });
   }
 
+  /** Get and append comments and likes to each GitHub event
+   * 
+   * @param {*} ghPosts 
+   * @param {*} userId 
+   */
   static async getFeedInteractions(ghPosts, userId) {
     // Get array of ids of the posts
     let ghPostIds = ghPosts.map(post => post.id);
@@ -139,22 +151,46 @@ class PostClass {
     // Find if user liked post
     dbPosts = dbPosts.map(post => ({
       ...post._doc,
-      userLiked:
-        post.likes.some(like => like.userId === userId)
+      userLiked: post.likes.some(like => like.userId === userId)
     }));
 
     // Add social interactions to the feed event
     let completeFeed = ghPosts.map(post => {
       if (!post.comments) post.comments = [];
       if (!post.likes) post.likes = [];
-      return{
+      return {
         ...post,
         ...dbPosts.find(
-        socialItem => (socialItem.id === post.id) //&& socialItem
-      )
-    }});
+          socialItem => socialItem.id === post.id //&& socialItem
+        )
+      };
+    });
 
     return completeFeed;
+  }
+
+  /** Get like and comment notifications from GitLink's DB
+   * 
+   * @param {*} ghEvents 
+   */
+  static async getNotifications(ghEvents) {
+    // Get array of ids of the posts
+    const ghPostIds = ghEvents.map(post => post.id);
+
+    // Get the social interactions from gitLink db using post id
+    let dbPosts = await this.findByGitIds(ghPostIds);
+
+    // Get only posts with social interaction
+    dbPosts = dbPosts.filter(
+      post => post.likes.length > 0 || post.likes.length > 0
+    );
+    
+    // Create output array
+    dbPosts.reduce((acc, post) => {
+      return acc.concat(...post.comments, ...post.likes);
+    }, []);
+
+    return dbPosts;
   }
 }
 
