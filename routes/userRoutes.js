@@ -85,6 +85,43 @@ router.get('/search', async (req, res, next) => {
 });
 
 
+
+router.put('/following/:login', async(req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {userToFollow} = req.params;
+    let response = await  gh(currentUser.access_token).put(`/user/following/${userToFollow}`, {}, {
+      headers:{'Content-Length': 0}
+    });
+    res.json({
+      success: true
+    })
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+
+});
+
+
+router.delete('/following/:login', async(req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {userToFollow} = req.params;
+    let response = await  gh(currentUser.access_token).put(`/user/following/${userToFollow}`);
+    res.json({
+      success: true
+    })
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+});
+
+
+
 /**
  * @api {get} /users/{login}/repos Get all repos for a given user
  * @apiName GetRepos
