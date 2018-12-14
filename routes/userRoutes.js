@@ -85,6 +85,38 @@ router.get('/search', async (req, res, next) => {
 });
 
 
+//get list of followers of login (can be my username)
+router.get('/followers/:login' , async (req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).get(`/users/${login}/followers`);
+    res.json(response.data);
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+
+});
+
+
+
+//get list of who a user is following (can be my username)
+router.get('/following/list/:login', async (req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).get(`/users/${login}/following`);
+    res.json(response.data);
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+
+});
+
 //check if I am following a user
 router.get('/following/:login', async (req, res, next) => {
 
