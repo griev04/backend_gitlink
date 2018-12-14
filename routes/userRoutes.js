@@ -104,7 +104,6 @@ router.get('/followers/:login' , async (req, res, next) => {
 
 //get list of who a user is following (can be my username)
 router.get('/following/list/:login', async (req, res, next) => {
-
   try{
     const currentUser = req.user;
     const {login} = req.params;
@@ -114,7 +113,6 @@ router.get('/following/list/:login', async (req, res, next) => {
     console.log(err);
     res.status(500).json({error: err.message})
   }
-
 });
 
 //check if I am following a user
