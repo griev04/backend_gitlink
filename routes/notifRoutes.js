@@ -30,7 +30,6 @@ router.get("/currentUser", async (req, res, next) => {
           )
         };
         result = result.concat(commentEvent);
-        console.log("ONE COMMENT", commentEvent);
       }
 
       if (likes.length > 0) {
@@ -44,12 +43,9 @@ router.get("/currentUser", async (req, res, next) => {
           )
         };
         result = result.concat(likeEvent);
-
-        console.log("ONE LIKE", likeEvent);
       }
       return acc.concat(result);
     }, []);
-    // console.log("***********", notificationEvents.slice(0, 2));
     return notificationEvents;
   }
 
@@ -60,7 +56,7 @@ router.get("/currentUser", async (req, res, next) => {
     );
 
     // Get recently updated repos
-    let userRepos = reposResponse.data.slice(0, 2); //.filter(repo => repo.updated_at);
+    let userRepos = reposResponse.data.filter(repo => (new Date(repo.updated_at)) > new Date(new Date(new Date() - 3600*24*1000*5)));
 
     // Get events for each repo
     let reposEventsResponse = await Promise.all(
