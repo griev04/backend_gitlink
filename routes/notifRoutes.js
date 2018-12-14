@@ -1,12 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const Post = require("../models/PostModel");
-const User = require("../models/UserModel");
 
 const gh = require("../config/githubApi");
 
 router.get("/currentUser", async (req, res, next) => {
 
+  /** Retrieve liked and commented events concerning the user
+   * 
+   * @param {*} user 
+   */
   async function getDbNotification(user) {
     const eventsResponse = await gh(user.access_token).get(
       `/users/${user.login}/events`
@@ -49,6 +52,10 @@ router.get("/currentUser", async (req, res, next) => {
     return notificationEvents;
   }
 
+  /** Retrieve GitHub events concerning the user
+   * 
+   * @param {*} user 
+   */
   async function getGhNotifications(user) {
     // Get current user's repos
     const reposResponse = await gh(user.access_token).get(
@@ -56,7 +63,7 @@ router.get("/currentUser", async (req, res, next) => {
     );
 
     // Get recently updated repos
-    let userRepos = reposResponse.data.filter(repo => (new Date(repo.updated_at)) > new Date(new Date(new Date() - 3600*24*1000*5)));
+    let userRepos = reposResponse.data.filter(repo => (new Date(repo.updated_at)) > new Date(new Date(new Date() - 3600*24*1000*2)));
 
     // Get events for each repo
     let reposEventsResponse = await Promise.all(
@@ -74,8 +81,7 @@ router.get("/currentUser", async (req, res, next) => {
       return {...oneEvent, created_at: new Date (oneEvent.created_at)};
     });
 
-    // console.log("-------------------", repoEvents.slice(0, 2));
-    return repoEvents.slice(0, 10);
+    return repoEvents;
   }
 
   try {
@@ -87,44 +93,16 @@ router.get("/currentUser", async (req, res, next) => {
       // EVENTS FROM GITLINK
       getDbNotification(user)
     ]);
-    // let ghNotifications = await getGhNotifications(user);
-
-    // let dbNotifications = await getDbNotification(user);
 
     const notifications = dbNotifications
       .concat(ghNotifications)
       .sort((first, second) => (second.created_at > first.created_at ? 1 : -1));
 
-    // GET LIKES AND COMMENTS
-    // let gitLinkNotifications = User.getUserNotification(user);
-
-    // const result = gitLinkNotifications;
-    console.log("Sending to client...");
     res.json(notifications);
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: err.message });
   }
 });
-
-// router.get("/currentUser", async (req, res, next) => {
-//   try {
-//     const user = req.user;
-//     // GET GITHUB NOTIFICATIONS
-//     // let response = await gh(user.access_token).get(
-//     //   `/users/${user.login}/events`
-//     // );
-
-//     // console.log('***********', response.data);
-//     // GET LIKES AND COMMENTS
-//     let gitLinkNotifications = User.getUserNotification(user);
-
-//     const result = gitLinkNotifications;
-//     res.json(result);
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500).json({ error: err.message });
-//   }
-// });
 
 module.exports = router;

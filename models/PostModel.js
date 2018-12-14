@@ -2,8 +2,6 @@ const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
 const Schema = mongoose.Schema;
 
-const User = require("./UserModel");
-
 const PostSchema = new Schema(
   {
     id: {
@@ -79,11 +77,6 @@ class PostClass {
           { $addToSet: { comments: newComment } }
         );
       }
-
-      // Create notification for receiving user
-
-      // User.createAndSaveNotification(feedEvent, newComment, "comment");
-
       return true;
     } catch (err) {
       console.log(err);
@@ -143,6 +136,11 @@ class PostClass {
     return this.find({ id: { $in: feedIds } });
   }
 
+  /** Get and append comments and likes to each GitHub event
+   * 
+   * @param {*} ghPosts 
+   * @param {*} userId 
+   */
   static async getFeedInteractions(ghPosts, userId) {
     // Get array of ids of the posts
     let ghPostIds = ghPosts.map(post => post.id);
@@ -171,6 +169,10 @@ class PostClass {
     return completeFeed;
   }
 
+  /** Get like and comment notifications from GitLink's DB
+   * 
+   * @param {*} ghEvents 
+   */
   static async getNotifications(ghEvents) {
     // Get array of ids of the posts
     const ghPostIds = ghEvents.map(post => post.id);
