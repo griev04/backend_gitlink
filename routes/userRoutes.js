@@ -90,8 +90,8 @@ router.get('/following/:login', async (req, res, next) => {
 
   try{
     const currentUser = req.user;
-    const {userToFollow} = req.params;
-    let response = await  gh(currentUser.access_token).get(`/user/following/${userToFollow}`);
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).get(`/user/following/${login}`);
     if (response.status !== 404){
       res.json({following: true})
     } else {
@@ -109,8 +109,8 @@ router.put('/following/:login', async (req, res, next) => {
 
   try{
     const currentUser = req.user;
-    const {userToFollow} = req.params;
-    let response = await  gh(currentUser.access_token).put(`/user/following/${userToFollow}`, {}, {
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).put(`/user/following/${login}`, {}, {
       headers:{'Content-Length': 0}
     });
     res.json({
@@ -128,8 +128,8 @@ router.delete('/following/:login', async(req, res, next) => {
 
   try{
     const currentUser = req.user;
-    const {userToFollow} = req.params;
-    let response = await  gh(currentUser.access_token).put(`/user/following/${userToFollow}`);
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).put(`/user/following/${login}`);
     res.json({
       success: true
     })
