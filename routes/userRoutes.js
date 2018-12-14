@@ -85,8 +85,27 @@ router.get('/search', async (req, res, next) => {
 });
 
 
+//check if I am following a user
+router.get('/following/:login', async (req, res, next) => {
 
-router.put('/following/:login', async(req, res, next) => {
+  try{
+    const currentUser = req.user;
+    const {userToFollow} = req.params;
+    let response = await  gh(currentUser.access_token).get(`/user/following/${userToFollow}`);
+    if (response.status !== 404){
+      res.json({following: true})
+    } else {
+      res.status(200).json({following: false});
+    }
+  } catch(err){
+    console.log(err);
+    res.status(200).json({following: false});
+  }
+});
+
+
+// follow a user
+router.put('/following/:login', async (req, res, next) => {
 
   try{
     const currentUser = req.user;
@@ -104,7 +123,7 @@ router.put('/following/:login', async(req, res, next) => {
 
 });
 
-
+//  unfollow a user
 router.delete('/following/:login', async(req, res, next) => {
 
   try{
