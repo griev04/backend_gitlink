@@ -84,6 +84,92 @@ router.get('/search', async (req, res, next) => {
 });
 
 
+//get list of followers of login (can be my username)
+router.get('/followers/:login' , async (req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).get(`/users/${login}/followers`);
+    res.json({followers: response.data});
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+
+});
+
+
+
+//get list of who a user is following (can be my username)
+router.get('/following/list/:login', async (req, res, next) => {
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).get(`/users/${login}/following`);
+    res.json({following: response.data});
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+});
+
+//check if I am following a user
+router.get('/following/:login', async (req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).get(`/user/following/${login}`);
+    if (response.status !== 404){
+      res.json({following: true})
+    } else {
+      res.status(200).json({following: false});
+    }
+  } catch(err){
+    console.log(err);
+    res.status(200).json({following: false});
+  }
+});
+
+
+// follow a user
+router.put('/following/:login', async (req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).put(`/user/following/${login}`, {}, {
+      headers:{'Content-Length': 0}
+    });
+    res.json({
+      success: true
+    })
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+
+});
+
+//  unfollow a user
+router.delete('/following/:login', async(req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).put(`/user/following/${login}`);
+    res.json({
+      success: true
+    })
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+});
+
+
+
 /**
  * @api {get} /users/{login}/repos Get all repos for a given user
  * @apiName GetRepos
