@@ -46,4 +46,10 @@ app.use('/api/users', passport.authenticate('jwt', { session : false , failureRe
 const postRoutes = require('./routes/postRoutes');
 app.use('/api/posts', passport.authenticate('jwt', { session : false , failureRedirect:'/api/auth/failedAuth'}), postRoutes );
 
+const repoRoutes = require('./routes/repoRoutes');
+app.use('/api/repos', passport.authenticate('jwt', { session : false , failureRedirect:'/api/auth/failedAuth'}), repoRoutes );
+
+const notifRoutes = require('./routes/notifRoutes');
+app.use('/api/notifs', passport.authenticate('jwt', { session : false , failureRedirect:'/api/auth/failedAuth'}), notifRoutes );
+
 module.exports = app;

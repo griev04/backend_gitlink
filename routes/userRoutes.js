@@ -1,8 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const User = require('../models/userModel');
-const gh = require('../config/githubApi');
+const gh = require("../config/githubApi");
 
 /**
  * @api {get} /user/current Get the current User information
@@ -46,20 +45,156 @@ const gh = require('../config/githubApi');
  *       "user": "null"
  *     }
  */
-router.get('/current', async (req, res, next) => {
-
+router.get("/current", async (req, res, next) => {
   // TODO: this is just a demo and will certainly by changed
   // 1. get user data
-  let userRequest = await gh(req.user.access_token).get('/user');
-
+  let userRequest = await gh(req.user.access_token).get("/user");
   let user = userRequest.data;
 
-  if (!user){res.json({user: null}); return;}
-  res.json({user});
+  if (!user) {
+    res.json({ user: null });
+    return;
+  }
+  res.json({ user });
 });
 
+
 /**
- * @api {get} /user/:id Get User information
+ * @api {get} /users/search Searches a user in github
+ * @apiName SearchUser
+ * @apiGroup User
+ *
+ * @apiParam {String} query username of the user to look for
+ *
+ * @apiSuccess {[Object]} items array of user objects
+ *
+ */
+router.get('/search', async (req, res, next) => {
+  try{
+    const user = req.user;
+    const {query} = req.query;
+    let response = await gh(user.access_token).get(`/search/users?q=${query}`);
+    res.json({
+      items: response.data.items
+    })
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+});
+
+
+//get list of followers of login (can be my username)
+router.get('/followers/:login' , async (req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).get(`/users/${login}/followers`);
+    res.json({followers: response.data});
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+
+});
+
+
+
+//get list of who a user is following (can be my username)
+router.get('/following/list/:login', async (req, res, next) => {
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).get(`/users/${login}/following`);
+    res.json({following: response.data});
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+});
+
+//check if I am following a user
+router.get('/following/:login', async (req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).get(`/user/following/${login}`);
+    if (response.status !== 404){
+      res.json({following: true})
+    } else {
+      res.status(200).json({following: false});
+    }
+  } catch(err){
+    console.log(err);
+    res.status(200).json({following: false});
+  }
+});
+
+
+// follow a user
+router.put('/following/:login', async (req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).put(`/user/following/${login}`, {}, {
+      headers:{'Content-Length': 0}
+    });
+    res.json({
+      success: true
+    })
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+
+});
+
+//  unfollow a user
+router.delete('/following/:login', async(req, res, next) => {
+
+  try{
+    const currentUser = req.user;
+    const {login} = req.params;
+    let response = await  gh(currentUser.access_token).delete(`/user/following/${login}`);
+    res.json({
+      success: true
+    })
+  } catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message})
+  }
+});
+
+
+
+/**
+ * @api {get} /users/{login}/repos Get all repos for a given user
+ * @apiName GetRepos
+ * @apiGroup User
+ *
+ * @apiSuccess {[Object]} items array of repo objects
+ *
+ */
+router.get('/:login/repos', async (req, res, next) => {
+  try{
+  const {access_token} = req.user;
+  const {login} = req.params;
+  let response =  await gh(access_token).get(`/users/${login}/repos`, {
+    params: {sort: 'updated'}
+  });
+  res.json(response.data);
+  } catch(err){
+    console.log(err);
+    res.status(500).json({err: err.message});
+  }
+});
+
+
+/**
+ * @api {get} /user/:login Get User information
  * @apiName GetUser
  * @apiGroup User
  *
@@ -85,21 +220,18 @@ router.get('/current', async (req, res, next) => {
  * @apiSuccess {String} site_admin
  * @apiSuccess {String} name
  */
-router.get('/:id', async (req, res, next) => {
-  try{
-    // TODO: this is just a demo and will certainly by changed
-    const {id} = req.params;
-    const user = await User.findByGitId(id);
-    if(!user){
-      console.log(`user with id ${id} not found in the database`);
-      res.json({user: null});
-    }
-    res.json({user});
-  } catch(err){
-    console.log(err);
-    next(err);
-  }
-});
 
+router.get("/:login", async (req, res, next) => {
+  try {
+    // get otherprofile information
+    const { login } = req.params;
+    const response = await gh(req.user.access_token).get(`/users/${login}`);
+    res.json({otherUser: response.data});
+  }
+  catch(err){
+    console.log(err);
+    res.status(500).json({error: err.message});
+    }
+});
 
 module.exports = router;
